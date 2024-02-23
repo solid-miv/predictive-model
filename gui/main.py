@@ -14,6 +14,10 @@ from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.model_selection import train_test_split
 
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+
 from PyQt6 import QtGui
 from PyQt6.QtWidgets import (
     QApplication,
@@ -128,12 +132,30 @@ class Window(QMainWindow):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2,
                                                             random_state=42)
         
-        # Random Forest Regressor
-        self.regressor = RandomForestRegressor(n_estimators=5, random_state=0, max_depth=5)
-        self.regressor.fit(X_train, y_train)
+        # # Random Forest Regressor
+        # self.regressor = RandomForestRegressor(n_estimators=5, random_state=0, max_depth=5)
+        # self.regressor.fit(X_train, y_train)
 
+        # Y_pred = self.regressor.predict(X_test)
+        # self.test_y = y_test       
+
+        # # evaluate the model
+        # mse = mean_squared_error(y_test, Y_pred)
+        # print(f"mse: {mse}")
+
+        # mae = mean_absolute_error(y_test, Y_pred)
+        # print(f"mae: {mae}")
+
+        # r2 = r2_score(y_test, Y_pred)
+        # print(f"r2: {r2}")
+
+        #load the model
+        self.regressor = tf.keras.models.load_model(
+            filepath=os.path.join(os.getcwd(), "saved_model/dnn_model.tf")
+        )
+        
         Y_pred = self.regressor.predict(X_test)
-        self.test_y = y_test       
+        self.test_y = y_test
 
         # evaluate the model
         mse = mean_squared_error(y_test, Y_pred)
@@ -144,7 +166,6 @@ class Window(QMainWindow):
 
         r2 = r2_score(y_test, Y_pred)
         print(f"r2: {r2}")
-
 
     def show_second_window(self):
         if self.w2.isHidden(): 
@@ -419,7 +440,7 @@ class Window(QMainWindow):
             nw = 1
         
         X_test = [[ne, nw, se, sw, a, m, b, c, h]]
-        predicted_charges = round(self.regressor.predict(X_test)[0], 2)
+        predicted_charges = round(self.regressor.predict(X_test)[0][0], 2)
 
         print(type(predicted_charges))
         print("Predicted charges: %.2f" % predicted_charges)
