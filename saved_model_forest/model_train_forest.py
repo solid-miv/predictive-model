@@ -61,6 +61,12 @@ def build_model(X_train, X_test, y_train, y_test):
     r2 = r2_score(y_test, Y_pred)
     print(f"r2: {r2}")
 
+    # save the evaluation results to forest_evaluation.txt
+    with open(os.path.join(os.getcwd(), f"saved_model_forest/forest_evaluation.txt"), "w") as file:
+        file.write(f"mse: {mse}\n")
+        file.write(f"mae: {mae}\n")
+        file.write(f"r2: {r2}")
+
     return regressor
 
 # save the model
