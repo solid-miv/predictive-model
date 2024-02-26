@@ -1,15 +1,13 @@
-from pathlib import Path
 import os
 
 import pandas as pd
 
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
-
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+
+from joblib import dump
 
 
 # load and preprocess the data
@@ -46,32 +44,12 @@ def load_preprocess_data():
     return X_train, X_test, y_train, y_test
 
 # build and evaluate the model
-def build_evaluate_model(X_train, X_test, y_train, y_test):
-    # DNN with TensorFlow
-    # build a model
-    normalizer = tf.keras.layers.Normalization(axis=-1)
-    normalizer.adapt(X_train)
+def build_model(X_train, X_test, y_train, y_test):
+    # Random Forest Regressor
+    regressor = RandomForestRegressor(n_estimators=5, random_state=0, max_depth=5)
+    regressor.fit(X_train, y_train)
 
-    model = tf.keras.Sequential([
-        normalizer,
-        layers.Dense(64, activation='relu'),
-        layers.Dense(64, activation='relu'),
-        layers.Dense(1)
-    ])
-
-    model.compile(loss='mean_absolute_error', 
-                  optimizer=tf.keras.optimizers.Adam(0.001))            
-    
-    model.summary()
-
-    model.fit(
-        X_train, y_train,
-        validation_split=0.2,
-        epochs=1000,
-        verbose=0
-    )
-
-    Y_pred = model.predict(X_test)
+    Y_pred = regressor.predict(X_test)     
 
     # evaluate the model
     mse = mean_squared_error(y_test, Y_pred)
@@ -83,14 +61,14 @@ def build_evaluate_model(X_train, X_test, y_train, y_test):
     r2 = r2_score(y_test, Y_pred)
     print(f"r2: {r2}")
 
-    return model
+    return regressor
 
 # save the model
-def save_model(model, format="keras"):
-    model.save(os.path.join(os.getcwd(), f"saved_model/dnn_model.{format}"))
+def save_model(regressor, filename=os.path.join(os.getcwd(), f"saved_model_forest/forest_model.joblib")):
+    dump(regressor, filename)
 
 
 if __name__ == "__main__":
     X_train, X_test, y_train, y_test = load_preprocess_data()
-    model = build_evaluate_model(X_train, X_test, y_train, y_test)
-    save_model(model, format="tf")
+    regressor = build_model(X_train, X_test, y_train, y_test)
+    save_model(regressor)

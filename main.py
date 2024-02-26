@@ -9,10 +9,7 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 import pandas as pd
 import numpy as np
 
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
-from sklearn.model_selection import train_test_split
+from joblib import load
 
 import tensorflow as tf
 from tensorflow import keras
@@ -64,7 +61,6 @@ def save_fig(fig, fig_id, tight_layout=True, fig_extension="png", resolution=300
 
 
 # OOP structure of the app
-
 class MplCanvas(FigureCanvasQTAgg):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         self.figure = Figure(figsize=(width, height), dpi=dpi)
@@ -94,78 +90,26 @@ class SecondWindow(QMainWindow):
 class Window(QMainWindow):
     def __init__(self):
       super().__init__()
-      self.load_data()
+      self.load_model_data()
       self.init_ui()
 
-    def load_data(self):
+    def load_model_data(self):
         global charges_data
         
         self.charges_data = pd.read_csv(os.path.join(os.getcwd(), "data/medical_cost.csv"))
         
-        # drop unnecessary column
-        X2 = self.charges_data.drop("Id", axis=1)
-
-        # get rid of string with label encoder
-        label_encoder = LabelEncoder()
-        X2['sex'] = label_encoder.fit_transform(X2['sex'])
-        X2['smoker'] = label_encoder.fit_transform(X2['smoker'])
-        
-        # get rid of string with one hot encoder
-        enc = OneHotEncoder(handle_unknown='ignore')
-        enc_df = pd.DataFrame(enc.fit_transform(X2[['region']]).toarray())
-        enc_df.rename(columns={3:'region_southwest', 2:'region_southeast', 
-                           1:'region_northwest', 0:'region_northeast'},
-                           inplace=True)
-        
-        # drop the region-column (string variant)
-        X2 = X2.drop('region', axis=1)
-
-        # join two dataframes
-        X2 = enc_df.join(X2)
-        
         # assign to global variable
         charges_data = self.charges_data
 
-        # extract the values from a dataframe
-        X, y = X2.iloc[:, :-1].values, X2.iloc[:, -1].values
-
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2,
-                                                            random_state=42)
-        
-        # # Random Forest Regressor
-        # self.regressor = RandomForestRegressor(n_estimators=5, random_state=0, max_depth=5)
-        # self.regressor.fit(X_train, y_train)
-
-        # Y_pred = self.regressor.predict(X_test)
-        # self.test_y = y_test       
-
-        # # evaluate the model
-        # mse = mean_squared_error(y_test, Y_pred)
-        # print(f"mse: {mse}")
-
-        # mae = mean_absolute_error(y_test, Y_pred)
-        # print(f"mae: {mae}")
-
-        # r2 = r2_score(y_test, Y_pred)
-        # print(f"r2: {r2}")
-
-        #load the model
-        self.regressor = tf.keras.models.load_model(
-            filepath=os.path.join(os.getcwd(), "saved_model/dnn_model.tf")
+        # load the DNN model
+        self.dnn_model = tf.keras.models.load_model(
+            filepath=os.path.join(os.getcwd(), "saved_model_dnn/dnn_model.tf")
         )
+
+        # load the Random Forest model
+        self.forest_model = load(os.path.join(os.getcwd(), "saved_model_forest/forest_model.joblib"))
+
         
-        Y_pred = self.regressor.predict(X_test)
-        self.test_y = y_test
-
-        # evaluate the model
-        mse = mean_squared_error(y_test, Y_pred)
-        print(f"mse: {mse}")
-
-        mae = mean_absolute_error(y_test, Y_pred)
-        print(f"mae: {mae}")
-
-        r2 = r2_score(y_test, Y_pred)
-        print(f"r2: {r2}")
 
     def show_second_window(self):
         if self.w2.isHidden(): 
@@ -281,16 +225,27 @@ class Window(QMainWindow):
         self.cbNW.setText("Northwest")
         layout3.addWidget(self.cbNW)
         
-        # button to predict costs
-        btn = QPushButton("Predict charges", self)
-        btn.setToolTip("Show Prediction")
-        btn.clicked.connect(self.show_prediction)
+        # prediction-label
+        label_prediction = QLabel("Predict with:")
+        layout3.addWidget(label_prediction)
 
-        btn.resize(btn.sizeHint())
-        # btn.move(410, 118)
+        # button to predict costs with DNN
+        btn_dnn = QPushButton("DNN", self)
+        btn_dnn.setToolTip("Show Prediction wuth a DNN model.")
+        btn_dnn.clicked.connect(self.show_prediction_dnn)
+
+        btn_dnn.resize(btn_dnn.sizeHint())
+
+        # button to predict costs with Random Forest Regressor
+        btn_forest = QPushButton("Random Forest Regression", self)
+        btn_forest.setToolTip("Show Prediction wuth a random forest regression model.")
+        btn_forest.clicked.connect(self.show_prediction_forest)
+
+        btn_forest.resize(btn_forest.sizeHint())
         
-        # close button set underneath the grid
-        layout3.addWidget(btn)
+        # close buttons set underneath the grid
+        layout3.addWidget(btn_dnn)
+        layout3.addWidget(btn_forest)
 
         self.labPrediction = QLabel(self)
         self.labPrediction.setText("Predicted charges: " + str(predicted_charges))
@@ -400,8 +355,9 @@ class Window(QMainWindow):
                 print("Cancel Closing")
                 if not type(event) == bool:
                     event.ignore()
-        
-    def show_prediction(self):
+
+    # show prediction with DNN  
+    def show_prediction_dnn(self):
         global predicted_charges
         
         a = self.qd.value()  # age
@@ -440,7 +396,55 @@ class Window(QMainWindow):
             nw = 1
         
         X_test = [[ne, nw, se, sw, a, m, b, c, h]]
-        predicted_charges = round(self.regressor.predict(X_test)[0][0], 2)
+        predicted_charges = round(self.dnn_model.predict(X_test)[0][0], 2)  # for dnn
+
+        print(type(predicted_charges))
+        print("Predicted charges: %.2f" % predicted_charges)
+
+        self.labPrediction.setText("Predicted charges: " + str(predicted_charges))
+        self.plot_charges(bmi=b, charges=predicted_charges)
+
+    # show prediction with Random Forest
+    def show_prediction_forest(self):
+        global predicted_charges
+        
+        a = self.qd.value()  # age
+        b = self.tsl.value()  # bmi
+        c = self.slChild.value()  # children
+        
+        # male
+        m = 0
+        if self.cbKitchen.isChecked:
+            m = 1
+
+        # smoker
+        h = 0
+        if self.cbHeat.isChecked:
+            h = 1
+
+        # regions
+        # southeast
+        se = 0
+        if self.cbSE.isChecked:
+            se = 1
+
+        #southwest
+        sw = 0
+        if self.cbSW.isChecked:
+            sw = 1
+
+        # northeast
+        ne = 0
+        if self.cbNE.isChecked:
+            ne = 1
+        
+        # northwest
+        nw = 0
+        if self.cbNW.isChecked:
+            nw = 1
+        
+        X_test = [[ne, nw, se, sw, a, m, b, c, h]]
+        predicted_charges = round(self.forest_model.predict(X_test)[0], 2)  # for random forest
 
         print(type(predicted_charges))
         print("Predicted charges: %.2f" % predicted_charges)
