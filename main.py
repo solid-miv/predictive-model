@@ -36,10 +36,15 @@ from matplotlib.figure import Figure
 matplotlib.use('Qt5Agg')
 
 
+# constants
+REQUEST_REGION_GENDER = "Please select a gender and a region."
+
 # global variables
+
 app_title = 'USA Medical Cost Prediction'
 charges_data = []
 predicted_charges = 36000
+
 # taken from the csv file, may be adjusted after reading CSV
 min_bmi = 15
 max_bmi = 50
@@ -71,6 +76,7 @@ class MplCanvas(FigureCanvasQTAgg):
 class SecondWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
         # use global data
         global charges_data
         
@@ -92,6 +98,7 @@ class Window(QMainWindow):
       super().__init__()
       self.load_model_data()
       self.init_ui()
+      self.resize(750, 700)
 
     def load_model_data(self):
         global charges_data
@@ -109,8 +116,6 @@ class Window(QMainWindow):
         # load the Random Forest model
         self.forest_model = load(os.path.join(os.getcwd(), "saved_model_forest/forest_model.joblib"))
 
-        
-
     def show_second_window(self):
         if self.w2.isHidden(): 
             self.w2.show()
@@ -125,15 +130,14 @@ class Window(QMainWindow):
         self.w2 = SecondWindow()
         # set Appilcation default styles
         font = QtGui.QFont("Sanserif", 12)
-        # font.setStyleHint(QtGui.QFont.)
         QApplication.setFont(QtGui.QFont(font))
-        QApplication.setWindowIcon(QtGui.QIcon('application-document.png'))
+        QApplication.setWindowIcon(QtGui.QIcon(os.path.join(os.getcwd(), "icon/icon.jpg")))
         
         # grid layout
         layout = QGridLayout()
 
         # 1st row of GridLayout
-        # dialer
+        # dialer for age
         self.qd = QDial()
         self.qd.setMinimum(18)
         self.qd.setMaximum(64)
@@ -141,30 +145,50 @@ class Window(QMainWindow):
         self.qd.valueChanged.connect(self.updateLabSize)
         layout.addWidget(self.qd, 0, 0)
 
-        # slider
-        self.tsl = QSlider(Qt.Orientation.Horizontal)
-        self.tsl.setMinimum(min_bmi) 
-        self.tsl.setMaximum(max_bmi)
-        self.tsl.valueChanged.connect(self.updateSelectedBMI)
-        layout.addWidget(self.tsl, 0,1)
+        # slider for bmi
+        self.slider_bmi = QSlider(Qt.Orientation.Horizontal)
+        self.slider_bmi.setMinimum(min_bmi) 
+        self.slider_bmi.setMaximum(max_bmi)
+        self.slider_bmi.valueChanged.connect(self.updateSelectedBMI)
+        layout.addWidget(self.slider_bmi, 0, 1)
         
         # 2nd row of GridLayout
-        self.labAppSize = QLabel(self)
-        self.labAppSize.setText(" Age : " + str(self.qd.value()))
-        layout.addWidget(self.labAppSize, 1,0)
+        layout_age = QHBoxLayout()
+        widget_age = QWidget()
+        self.lab_text_age = QLabel(self)
+        self.lab_text_age.setText(" Age : ")
+        self.lab_selected_age = QLabel(self)
+        self.lab_selected_age.setStyleSheet("QLabel {color: blue}")
+        self.lab_selected_age.setText(str(self.qd.value()))
+        font_text_age = self.lab_text_age.font()
+        font_text_age.setBold(True)
+        font_text_age.setPointSize(12)
+        self.lab_text_age.setFont(font_text_age)
+        self.lab_selected_age.setFont(font_text_age)
+        layout_age.addWidget(self.lab_text_age)
+        layout_age.addWidget(self.lab_selected_age)
+        widget_age.setLayout(layout_age)
+        layout.addWidget(widget_age, 1, 0)
+
         # in 2nd cell of 2nd row we use a Horizontal Layout for the 2 labels
         layout2 = QHBoxLayout()
         widget2 = QWidget()
-        self.minBMI = QLabel(self)
-        self.maxBMI = QLabel(self)
-        self.selectedBMI = QLabel(self)
-        self.selectedBMI.setStyleSheet("QLabel {color: magenta}")
-        self.minBMI.setText("Body mass index: " + str(min_bmi) + " (select with Slider)")
-        self.maxBMI.setText("           to: " + str(max_bmi))
-        self.selectedBMI.setText(str(min_bmi))
-        layout2.addWidget(self.minBMI)
-        layout2.addWidget(self.selectedBMI)
-        layout2.addWidget(self.maxBMI)
+        self.min_bmi = QLabel(self)
+        self.max_bmi = QLabel(self)
+        self.selected_bmi = QLabel(self)
+        self.selected_bmi.setStyleSheet("QLabel {color: blue}")
+        self.min_bmi.setText("Body mass index: " + str(min_bmi) + " (select with Slider)  ")
+        self.max_bmi.setText("           to: " + str(max_bmi))
+        self.selected_bmi.setText(str(min_bmi))
+        font_bmi = self.min_bmi.font()
+        font_bmi.setBold(True)
+        font_bmi.setPointSize(12)
+        self.min_bmi.setFont(font_bmi)
+        self.max_bmi.setFont(font_bmi)
+        self.selected_bmi.setFont(font_bmi)
+        layout2.addWidget(self.min_bmi)
+        layout2.addWidget(self.selected_bmi)
+        layout2.addWidget(self.max_bmi)
         widget2.setLayout(layout2)
         layout.addWidget(widget2, 1, 1)
         
@@ -172,61 +196,80 @@ class Window(QMainWindow):
         layout3 = QVBoxLayout()
         widget3 = QWidget()
 
-        # slider to choose the number of children
+        # slider to choose the number of children and the corresponding label above
         self.lab_children_num = QLabel(self)
         self.lab_children_num.setText("Number of children (0-10)")
+        font_lab_children_num = self.lab_children_num.font()
+        font_lab_children_num.setBold(True)
+        font_lab_children_num.setPointSize(12)
+        self.lab_children_num.setFont(font_lab_children_num)
         layout3.addWidget(self.lab_children_num)
-        self.slChild = QSlider(Qt.Orientation.Horizontal)
-        self.slChild.setMinimum(0) # min number of children
-        self.slChild.setMaximum(10) # max number of children (it is 10 and god bless those who have more...)
-        self.slChild.valueChanged.connect(self.updateLabPos)
-        layout3.addWidget(self.slChild)
-        self.labChild = QLabel(self)
-        self.labChild.setText("1")
-        layout3.addWidget(self.labChild)
+
+        self.slider_children = QSlider(Qt.Orientation.Horizontal)
+        self.slider_children.setMinimum(0)  # min number of children
+        self.slider_children.setMaximum(10)  # max number of children (it is 10 and god bless those who have more...)
+        self.slider_children.valueChanged.connect(self.update_age)
+        layout3.addWidget(self.slider_children)
+        self.label_children = QLabel(self)
+        self.label_children.setText("0")
+        layout3.addWidget(self.label_children)
 
         # checkboxes
         # male
-        self.cbKitchen = QCheckBox()
-        self.cbKitchen.setText("Male")
-        layout3.addWidget(self.cbKitchen)
+        self.cb_male = QCheckBox()
+        self.cb_male.setText("Male")
+        layout3.addWidget(self.cb_male)
 
         # female
-        self.cbBath = QCheckBox()
-        self.cbBath.setText("Female")
-        layout3.addWidget(self.cbBath)
+        self.cb_female = QCheckBox()
+        self.cb_female.setText("Female")
+        layout3.addWidget(self.cb_female)
 
         # smoker
-        self.cbHeat = QCheckBox()
-        self.cbHeat.setText("Smoker")
-        layout3.addWidget(self.cbHeat)
+        self.cb_smoker = QCheckBox()
+        self.cb_smoker.setText("Smoker")
+        layout3.addWidget(self.cb_smoker)
+
+        # empty line
+        self.empty_label = QLabel(self)
+        self.empty_label.setText("")
+        layout3.addWidget(self.empty_label)
 
         # regions-label
-        label = QLabel("Regions:")
-        layout3.addWidget(label)
+        label_regions = QLabel("Regions:")
+        font_regions = label_regions.font()
+        font_regions.setBold(True)
+        font_regions.setPointSize(13)
+        label_regions.setFont(font_regions)
+        layout3.addWidget(label_regions)
 
         # southeast
-        self.cbSE = QCheckBox()
-        self.cbSE.setText("Southeast")
-        layout3.addWidget(self.cbSE)
+        self.cb_se = QCheckBox()
+        self.cb_se.setText("Southeast")
+        layout3.addWidget(self.cb_se)
 
         # southwest
-        self.cbSW = QCheckBox()
-        self.cbSW.setText("Southwest")
-        layout3.addWidget(self.cbSW)
+        self.cb_sw = QCheckBox()
+        self.cb_sw.setText("Southwest")
+        layout3.addWidget(self.cb_sw)
 
         # northeast
-        self.cbNE = QCheckBox()
-        self.cbNE.setText("Northeast")
-        layout3.addWidget(self.cbNE)
+        self.cb_ne = QCheckBox()
+        self.cb_ne.setText("Northeast")
+        layout3.addWidget(self.cb_ne)
 
         # northwest
-        self.cbNW = QCheckBox()
-        self.cbNW.setText("Northwest")
-        layout3.addWidget(self.cbNW)
+        self.cb_nw = QCheckBox()
+        self.cb_nw.setText("Northwest")
+        layout3.addWidget(self.cb_nw)
         
         # prediction-label
         label_prediction = QLabel("Predict with:")
+        font_prediction = label_prediction.font()
+        font_prediction.setBold(True)
+        font_prediction.setPointSize(13)
+        label_prediction.setFont(font_prediction)
+        layout3.addWidget(self.empty_label)  # add an empty line between prediction label and regions checkboxes
         layout3.addWidget(label_prediction)
 
         # button to predict costs with DNN
@@ -247,38 +290,42 @@ class Window(QMainWindow):
         layout3.addWidget(btn_dnn)
         layout3.addWidget(btn_forest)
 
-        self.labPrediction = QLabel(self)
-        self.labPrediction.setText("Predicted charges: " + str(predicted_charges))
-        layout3.addWidget(self.labPrediction)
+        self.label_prediction = QLabel(self)
+        self.label_prediction.setText("Predicted charges: " + str(predicted_charges))
+        font_lab_prediction = self.label_prediction.font()
+        font_lab_prediction.setBold(True)
+        font_lab_prediction.setFamily("Tahoma")
+        self.label_prediction.setFont(font_lab_prediction)
+        layout3.addWidget(self.empty_label)  # add an empty line between predicted charges and buttons
+        layout3.addWidget(self.label_prediction)
         
         widget3.setLayout(layout3)
         layout.addWidget(widget3, 2, 0)
         
         # canvas for plot
         self.sc = MplCanvas(self, width=5, height=4, dpi=100)
-        self.plot_charges(35.3,predicted_charges)
+        self.plot_charges(35.3, predicted_charges)
         
         self.sc.setMinimumWidth(100)
-        layout.addWidget(self.sc, 2,1)
+        layout.addWidget(self.sc, 2, 1)
         
         widget = QWidget()
         widget.setLayout(layout)
         
         # menu
-
         # first action - Show Historgrams Window
-        button_action1 = QAction(QIcon("application-block.png"), "&Histogram", self)
+        button_action1 = QAction(QIcon(os.path.join(os.getcwd(), "icon/histogram.png")), "&Histogram", self)
         button_action1.setStatusTip("Show histograms of data")
         button_action1.triggered.connect(self.show_second_window)
 
         # second action
-        button_action2 = QAction(QIcon("store.png"), "&Save Prediction Image", self)
+        button_action2 = QAction(QIcon(os.path.join(os.getcwd(), "icon/save.png")), "&Save Prediction Image", self)
         button_action2.setStatusTip("Save Image")
         button_action2.triggered.connect(self.sClick)
         button_action2.setCheckable(True)
 
-         # third action
-        button_action3 = QAction(QIcon("external.png"), "&Close", self)
+        # third action
+        button_action3 = QAction(QIcon(os.path.join(os.getcwd(), "icon/close.jpg")), "&Close", self)
         button_action3.setStatusTip("Close Application")
         button_action3.triggered.connect(self.closeEvent)
         button_action3.setCheckable(True)
@@ -320,18 +367,18 @@ class Window(QMainWindow):
         self.sc.draw()
 
     def updateSelectedBMI(self):
-        val = self.tsl.value()
-        self.selectedBMI.setText(str(val))
+        val = self.slider_bmi.value()
+        self.selected_bmi.setText(str(val))
         print(val)
         
     def updateLabSize(self):
         val = self.qd.value()
-        self.labAppSize.setText(" Age : " + str(val))
+        self.lab_selected_age.setText(str(val))
         print(val)
     
-    def updateLabPos(self):
-        val = self.slChild.value()
-        self.labChild.setText(str(val))
+    def update_age(self):
+        val = self.slider_children.value()
+        self.label_children.setText(str(val))
         print(val)
         
     def sClick(self, event):
@@ -354,103 +401,121 @@ class Window(QMainWindow):
             else:
                 print("Cancel Closing")
                 if not type(event) == bool:
-                    event.ignore()
+                    event.ignore()  
+
+    # validate checkboxes
+    def validate_checkboxes(self):
+        # gender should have been chosen
+        if not (self.cb_male.isChecked() or self.cb_female.isChecked()):
+            return False
+        
+        # region should have been chosen
+        if not (self.cb_se.isChecked() or self.cb_sw.isChecked() or self.cb_ne.isChecked() or self.cb_nw.isChecked()):
+            return False
+    
+        return True
 
     # show prediction with DNN  
     def show_prediction_dnn(self):
-        global predicted_charges
+        if self.validate_checkboxes():
+            global predicted_charges
         
-        a = self.qd.value()  # age
-        b = self.tsl.value()  # bmi
-        c = self.slChild.value()  # children
-        
-        # male
-        m = 0
-        if self.cbKitchen.isChecked:
-            m = 1
+            a = self.qd.value()  # age
+            b = self.slider_bmi.value()  # bmi
+            c = self.slider_children.value()  # children
+            
+            # male
+            m = 0
+            if self.cb_male.isChecked:
+                m = 1
 
-        # smoker
-        h = 0
-        if self.cbHeat.isChecked:
-            h = 1
+            # smoker
+            h = 0
+            if self.cb_smoker.isChecked:
+                h = 1
 
-        # regions
-        # southeast
-        se = 0
-        if self.cbSE.isChecked:
-            se = 1
+            # regions
+            # southeast
+            se = 0
+            if self.cb_se.isChecked:
+                se = 1
 
-        #southwest
-        sw = 0
-        if self.cbSW.isChecked:
-            sw = 1
+            #southwest
+            sw = 0
+            if self.cb_sw.isChecked:
+                sw = 1
 
-        # northeast
-        ne = 0
-        if self.cbNE.isChecked:
-            ne = 1
-        
-        # northwest
-        nw = 0
-        if self.cbNW.isChecked:
-            nw = 1
-        
-        X_test = [[ne, nw, se, sw, a, m, b, c, h]]
-        predicted_charges = round(self.dnn_model.predict(X_test)[0][0], 2)  # for dnn
+            # northeast
+            ne = 0
+            if self.cb_ne.isChecked:
+                ne = 1
+            
+            # northwest
+            nw = 0
+            if self.cb_nw.isChecked:
+                nw = 1
+            
+            X_test = [[ne, nw, se, sw, a, m, b, c, h]]
+            predicted_charges = round(self.dnn_model.predict(X_test)[0][0], 2)  # for dnn
 
-        print(type(predicted_charges))
-        print("Predicted charges: %.2f" % predicted_charges)
+            print(type(predicted_charges))
+            print("Predicted charges: %.2f" % predicted_charges)
 
-        self.labPrediction.setText("Predicted charges: " + str(predicted_charges))
-        self.plot_charges(bmi=b, charges=predicted_charges)
+            self.label_prediction.setText("Predicted charges: " + str(predicted_charges))
+            self.plot_charges(bmi=b, charges=predicted_charges)
+        else:
+            QMessageBox.warning(self, "Validation Error", REQUEST_REGION_GENDER)
 
     # show prediction with Random Forest
     def show_prediction_forest(self):
-        global predicted_charges
+        if self.validate_checkboxes():
+            global predicted_charges
         
-        a = self.qd.value()  # age
-        b = self.tsl.value()  # bmi
-        c = self.slChild.value()  # children
-        
-        # male
-        m = 0
-        if self.cbKitchen.isChecked:
-            m = 1
+            a = self.qd.value()  # age
+            b = self.slider_bmi.value()  # bmi
+            c = self.slider_children.value()  # children
+            
+            # male
+            m = 0
+            if self.cb_male.isChecked:
+                m = 1
 
-        # smoker
-        h = 0
-        if self.cbHeat.isChecked:
-            h = 1
+            # smoker
+            h = 0
+            if self.cb_smoker.isChecked:
+                h = 1
 
-        # regions
-        # southeast
-        se = 0
-        if self.cbSE.isChecked:
-            se = 1
+            # regions
+            # southeast
+            se = 0
+            if self.cb_se.isChecked:
+                se = 1
 
-        #southwest
-        sw = 0
-        if self.cbSW.isChecked:
-            sw = 1
+            #southwest
+            sw = 0
+            if self.cb_sw.isChecked:
+                sw = 1
 
-        # northeast
-        ne = 0
-        if self.cbNE.isChecked:
-            ne = 1
-        
-        # northwest
-        nw = 0
-        if self.cbNW.isChecked:
-            nw = 1
-        
-        X_test = [[ne, nw, se, sw, a, m, b, c, h]]
-        predicted_charges = round(self.forest_model.predict(X_test)[0], 2)  # for random forest
+            # northeast
+            ne = 0
+            if self.cb_ne.isChecked:
+                ne = 1
+            
+            # northwest
+            nw = 0
+            if self.cb_nw.isChecked:
+                nw = 1
+            
+            X_test = [[ne, nw, se, sw, a, m, b, c, h]]
+            predicted_charges = round(self.forest_model.predict(X_test)[0], 2)  # for random forest
 
-        print(type(predicted_charges))
-        print("Predicted charges: %.2f" % predicted_charges)
+            print(type(predicted_charges))
+            print("Predicted charges: %.2f" % predicted_charges)
 
-        self.labPrediction.setText("Predicted charges: " + str(predicted_charges))
-        self.plot_charges(bmi=b, charges=predicted_charges)
+            self.label_prediction.setText("Predicted charges: " + str(predicted_charges))
+            self.plot_charges(bmi=b, charges=predicted_charges)
+        else:
+            QMessageBox.warning(self, "Validation Error", REQUEST_REGION_GENDER)
 
 
 if __name__ == '__main__':
