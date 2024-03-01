@@ -36,4 +36,3 @@ The project main directory contains the following folders:
 ![Screenshot of a successful prediction](/screens/successful_prediction.png)
 #### Prediction with a warning
 ![Prediction with a warning](/screens/prediction_with_warning.png)
-#### Running app
