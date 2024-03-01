@@ -37,5 +37,3 @@ The project main directory contains the following folders:
 #### Prediction with a warning
 ![Prediction with a warning](/screens/prediction_with_warning.png)
 #### Running app
-<video src="/screens/running_app.mp4">
-</video>
