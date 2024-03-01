@@ -33,7 +33,6 @@ The project main directory contains the following folders:
 
 ### Application preview
 #### Successful prediction
-<img src="screens/successful_prediction.png" alt="Successful prediction" width="400" height="500">
-
+![Screenshot of a successful prediction](/screens/successful_prediction.png)
 #### Prediction with a warning
-<img src="screens/prediction_with_warning.png" alt="Prediction with a warning" width="400" height="500">
+![Prediction with a warning](/screens/prediction_with_warning.png)
