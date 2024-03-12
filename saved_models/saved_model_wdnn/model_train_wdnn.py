@@ -46,17 +46,23 @@ def load_preprocess_data():
 
 # build and evaluate the model
 def build_evaluate_model(X_train, X_test, y_train, y_test):
-    # DNN with TensorFlow
-    # build a model
-    normalizer = tf.keras.layers.Normalization(axis=-1)
-    normalizer.adapt(X_train)
+    # Wide & Deep Neural Network with TensorFlow
 
-    model = tf.keras.Sequential([
-        normalizer,
-        layers.Dense(64, activation='relu'),
-        layers.Dense(64, activation='relu'),
-        layers.Dense(1)
-    ])
+    normalization_layer = tf.keras.layers.Normalization(axis=-1)
+    normalization_layer.adapt(X_train)
+    hidden_layer1 = layers.Dense(128, activation="relu")
+    hidden_layer2 = layers.Dense(64, activation="relu")
+    concat_layer = layers.Concatenate()  # layer that concatenates a list of inputs
+    output_layer = layers.Dense(1)
+
+    input_ = layers.Input(shape=X_train.shape[1:])
+    normalized = normalization_layer(input_)
+    hidden1 = hidden_layer1(normalized)
+    hidden2 = hidden_layer2(hidden1)
+    concat = concat_layer([normalized, hidden2])
+    output = output_layer(concat)
+
+    model = keras.Model(inputs=[input_], outputs=[output])
 
     model.compile(loss='mean_absolute_error', 
                   optimizer=tf.keras.optimizers.Adam(0.001))            
@@ -65,6 +71,7 @@ def build_evaluate_model(X_train, X_test, y_train, y_test):
 
     model.fit(
         X_train, y_train,
+        batch_size=16,
         validation_split=0.2,
         epochs=1000,
         verbose=0
@@ -83,7 +90,7 @@ def build_evaluate_model(X_train, X_test, y_train, y_test):
     print(f"r2: {r2}")
 
     # save the evaluation results to dnn_evaluation.txt
-    with open(os.path.join(os.getcwd(), f"saved_model_dnn/dnn_evaluation.txt"), "w") as file:
+    with open(os.path.join(os.getcwd(), "saved_models/saved_model_wdnn/wdnn_evaluation.txt"), "w") as file:
         file.write(f"mse: {mse}\n")
         file.write(f"mae: {mae}\n")
         file.write(f"r2: {r2}")
@@ -92,7 +99,7 @@ def build_evaluate_model(X_train, X_test, y_train, y_test):
 
 # save the model
 def save_model(model, format="keras"):
-    model.save(os.path.join(os.getcwd(), f"saved_model_dnn/dnn_model.{format}"))
+    model.save(os.path.join(os.getcwd(), f"saved_models/saved_model_wdnn/wdnn_model.{format}"))
 
 
 if __name__ == "__main__":

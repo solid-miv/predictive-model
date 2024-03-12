@@ -53,7 +53,7 @@ max_bmi = 50
 # global functions
 
 # save the figures as high-res PNGs 
-IMAGES_PATH = Path() / "images" 
+IMAGES_PATH = Path() / "supplementary/images" 
 IMAGES_PATH.mkdir(parents=True, exist_ok=True)
 
 def save_fig(fig, fig_id, tight_layout=True, fig_extension="png", resolution=300):
@@ -98,7 +98,7 @@ class Window(QMainWindow):
       super().__init__()
       self.load_model_data()
       self.init_ui()
-      self.resize(750, 700)
+      self.resize(750, 750)
 
     def load_model_data(self):
         global charges_data
@@ -108,13 +108,18 @@ class Window(QMainWindow):
         # assign to global variable
         charges_data = self.charges_data
 
-        # load the DNN model
+        # load the Deep Neural Network model
         self.dnn_model = tf.keras.models.load_model(
-            filepath=os.path.join(os.getcwd(), "saved_model_dnn/dnn_model.tf")
+            filepath=os.path.join(os.getcwd(), "saved_models/saved_model_dnn/dnn_model.tf")
+        )
+
+        # load the Wide & Deep Neural Network model
+        self.wdnn_model = tf.keras.models.load_model(
+            filepath=os.path.join(os.getcwd(), "saved_models/saved_model_wdnn/wdnn_model.tf")
         )
 
         # load the Random Forest model
-        self.forest_model = load(os.path.join(os.getcwd(), "saved_model_forest/forest_model.joblib"))
+        self.forest_model = load(os.path.join(os.getcwd(), "saved_models/saved_model_forest/forest_model.joblib"))
 
     def show_second_window(self):
         if self.w2.isHidden(): 
@@ -131,7 +136,7 @@ class Window(QMainWindow):
         # set Appilcation default styles
         font = QtGui.QFont("Sanserif", 12)
         QApplication.setFont(QtGui.QFont(font))
-        QApplication.setWindowIcon(QtGui.QIcon(os.path.join(os.getcwd(), "icon/icon.jpg")))
+        QApplication.setWindowIcon(QtGui.QIcon(os.path.join(os.getcwd(), "supplementary/icon/icon.jpg")))
         
         # grid layout
         layout = QGridLayout()
@@ -142,14 +147,14 @@ class Window(QMainWindow):
         self.qd.setMinimum(18)
         self.qd.setMaximum(64)
         self.qd.setValue(20)
-        self.qd.valueChanged.connect(self.updateLabSize)
+        self.qd.valueChanged.connect(self.update_age)
         layout.addWidget(self.qd, 0, 0)
 
         # slider for bmi
         self.slider_bmi = QSlider(Qt.Orientation.Horizontal)
         self.slider_bmi.setMinimum(min_bmi) 
         self.slider_bmi.setMaximum(max_bmi)
-        self.slider_bmi.valueChanged.connect(self.updateSelectedBMI)
+        self.slider_bmi.valueChanged.connect(self.update_selected_BMI)
         layout.addWidget(self.slider_bmi, 0, 1)
         
         # 2nd row of GridLayout
@@ -208,7 +213,7 @@ class Window(QMainWindow):
         self.slider_children = QSlider(Qt.Orientation.Horizontal)
         self.slider_children.setMinimum(0)  # min number of children
         self.slider_children.setMaximum(10)  # max number of children (it is 10 and god bless those who have more...)
-        self.slider_children.valueChanged.connect(self.update_age)
+        self.slider_children.valueChanged.connect(self.update_children_number)
         layout3.addWidget(self.slider_children)
         self.label_children = QLabel(self)
         self.label_children.setText("0")
@@ -272,8 +277,15 @@ class Window(QMainWindow):
         layout3.addWidget(self.empty_label)  # add an empty line between prediction label and regions checkboxes
         layout3.addWidget(label_prediction)
 
+        # button to predict costs with WDNN
+        btn_wdnn = QPushButton("Wide&&Deep Neural Network", self)
+        btn_wdnn.setToolTip("Show Prediction wuth a WDNN model.")
+        btn_wdnn.clicked.connect(self.show_prediction_wdnn)
+
+        btn_wdnn.resize(btn_wdnn.sizeHint())
+
         # button to predict costs with DNN
-        btn_dnn = QPushButton("DNN", self)
+        btn_dnn = QPushButton("Deep Neural Network", self)
         btn_dnn.setToolTip("Show Prediction wuth a DNN model.")
         btn_dnn.clicked.connect(self.show_prediction_dnn)
 
@@ -287,6 +299,7 @@ class Window(QMainWindow):
         btn_forest.resize(btn_forest.sizeHint())
         
         # close buttons set underneath the grid
+        layout3.addWidget(btn_wdnn)
         layout3.addWidget(btn_dnn)
         layout3.addWidget(btn_forest)
 
@@ -314,18 +327,18 @@ class Window(QMainWindow):
         
         # menu
         # first action - Show Historgrams Window
-        button_action1 = QAction(QIcon(os.path.join(os.getcwd(), "icon/histogram.png")), "&Histogram", self)
+        button_action1 = QAction(QIcon(os.path.join(os.getcwd(), "supplementary/icon/histogram.png")), "&Histogram", self)
         button_action1.setStatusTip("Show histograms of data")
         button_action1.triggered.connect(self.show_second_window)
 
         # second action
-        button_action2 = QAction(QIcon(os.path.join(os.getcwd(), "icon/save.png")), "&Save Prediction Image", self)
+        button_action2 = QAction(QIcon(os.path.join(os.getcwd(), "supplementary/icon/save.png")), "&Save Prediction Image", self)
         button_action2.setStatusTip("Save Image")
-        button_action2.triggered.connect(self.sClick)
+        button_action2.triggered.connect(self.save_click)
         button_action2.setCheckable(True)
 
         # third action
-        button_action3 = QAction(QIcon(os.path.join(os.getcwd(), "icon/close.jpg")), "&Close", self)
+        button_action3 = QAction(QIcon(os.path.join(os.getcwd(), "supplementary/icon/close.jpg")), "&Close", self)
         button_action3.setStatusTip("Close Application")
         button_action3.triggered.connect(self.closeEvent)
         button_action3.setCheckable(True)
@@ -366,22 +379,22 @@ class Window(QMainWindow):
         
         self.sc.draw()
 
-    def updateSelectedBMI(self):
+    def update_selected_BMI(self):
         val = self.slider_bmi.value()
         self.selected_bmi.setText(str(val))
         print(val)
         
-    def updateLabSize(self):
+    def update_age(self):
         val = self.qd.value()
         self.lab_selected_age.setText(str(val))
         print(val)
     
-    def update_age(self):
+    def update_children_number(self):
         val = self.slider_children.value()
         self.label_children.setText(str(val))
         print(val)
         
-    def sClick(self, event):
+    def save_click(self, event):
         save_fig(self.sc.figure, "prediction_plot")
         
     def closeEvent(self, event):
@@ -414,6 +427,57 @@ class Window(QMainWindow):
             return False
     
         return True
+
+    # show prediction with WDNN  
+    def show_prediction_wdnn(self):
+        if self.validate_checkboxes():
+            global predicted_charges
+        
+            a = self.qd.value()  # age
+            b = self.slider_bmi.value()  # bmi
+            c = self.slider_children.value()  # children
+            
+            # male
+            m = 0
+            if self.cb_male.isChecked:
+                m = 1
+
+            # smoker
+            h = 0
+            if self.cb_smoker.isChecked:
+                h = 1
+
+            # regions
+            # southeast
+            se = 0
+            if self.cb_se.isChecked:
+                se = 1
+
+            #southwest
+            sw = 0
+            if self.cb_sw.isChecked:
+                sw = 1
+
+            # northeast
+            ne = 0
+            if self.cb_ne.isChecked:
+                ne = 1
+            
+            # northwest
+            nw = 0
+            if self.cb_nw.isChecked:
+                nw = 1
+            
+            X_test = [[ne, nw, se, sw, a, m, b, c, h]]
+            predicted_charges = round(self.wdnn_model.predict(X_test)[0][0], 2)  # for wdnn
+
+            print(type(predicted_charges))
+            print("Predicted charges: %.2f" % predicted_charges)
+
+            self.label_prediction.setText("Predicted charges: " + str(predicted_charges))
+            self.plot_charges(bmi=b, charges=predicted_charges)
+        else:
+            QMessageBox.warning(self, "Validation Error", REQUEST_REGION_GENDER)
 
     # show prediction with DNN  
     def show_prediction_dnn(self):

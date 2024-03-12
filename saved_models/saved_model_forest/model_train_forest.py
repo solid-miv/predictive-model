@@ -62,7 +62,7 @@ def build_model(X_train, X_test, y_train, y_test):
     print(f"r2: {r2}")
 
     # save the evaluation results to forest_evaluation.txt
-    with open(os.path.join(os.getcwd(), f"saved_model_forest/forest_evaluation.txt"), "w") as file:
+    with open(os.path.join(os.getcwd(), "saved_models/saved_model_forest/forest_evaluation.txt"), "w") as file:
         file.write(f"mse: {mse}\n")
         file.write(f"mae: {mae}\n")
         file.write(f"r2: {r2}")
@@ -70,7 +70,7 @@ def build_model(X_train, X_test, y_train, y_test):
     return regressor
 
 # save the model
-def save_model(regressor, filename=os.path.join(os.getcwd(), f"saved_model_forest/forest_model.joblib")):
+def save_model(regressor, filename=os.path.join(os.getcwd(), "saved_models/saved_model_forest/forest_model.joblib")):
     dump(regressor, filename)
 
 
