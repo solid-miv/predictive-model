@@ -5,8 +5,16 @@ The original data was taken from [here](https://www.kaggle.com/datasets/mirichoi
 
 
 ### How to run a project
-Start ***main.py*** in order to run a project.
+Start `main.py` in order to run a project.
 You don't need to train any models before running the program, because they have already be trained and could be found inside *saved_model_dnn/* and *saved_model_forest/*. If you do want to train the models by yourself or change some hyperparameters, then feel free to run *model_train_dnn.py* or *model_train_forest.py*.
+
+
+### Models available
+This recommendation system can predict the costs with 3 models:
+- Deep Neural Network (you can find its architecture in `saved_models/saved_model_dnn/model_train_dnn.py`)
+- Wide&Deep Neural Network (you can find its architecture in `saved_models/saved_model_wdnn/model_train_wdnn.py`)
+- Random Forest Regression (you can find its setup in `saved_models/saved_model_forest/model_train_forest.py`)
+Deep NN and Wide&Deep NN have approximately the same scores. And they are slightly better than the Random Forest Regression model.
 
 
 ### Data description
@@ -21,14 +29,11 @@ The recommendations system takes into account:
 
 ### Project structure
 The project main directory contains the following folders:
-- ***data*** with a *medical_cost.csv* file, which contains the raw data, and *preliminary_work.ipynb*, which illustrates the comparison of different ML models and a DNN model.
-- ***icon*** contains various icons used in the app.
-- ***images*** with a few statistical plots generated from the data.
-- ***saved_model_dnn*** with a *model_train_dnn.py* file, which loads and preprocesses data, builds and trains a DNN, and saves it to *dnn_model.tf*. *dnn_evaluation.txt* contains the DNN model's scores.
-- ***saved_model_forest*** with a *model_train_forest.py* file, which loads and preprocesses data, builds and trains a Random Forest Regressor, and saves it to *forest_model.joblib*. *forest_evaluation.txt* contains the RFR model's scores.
-- ***screens*** contains the screenshots of the running app
-- ***main.py*** that you can run to start the project.
-- ***requirements.txt*** contains external python modules used in the project and their versions.
+- `data` with a *medical_cost.csv* file, which contains the raw data, and *preliminary_work.ipynb*, which illustrates the comparison of different ML models and a DNN model.
+- `saved_models` contains `saved_model_forest`, `saved_model_dnn`, `saved_model_wdnn`. Each of these 3 folders contains the saved model (Random Forest Regressor or Deep Neural Network or Wide&Deep Neural Network), a Python file, which you can run to train the model again (though it has already been trained), and a `.txt` file with model's scores (mean squared error, mean absolute error, and the coefficient of determination $R^2$)
+- `supplementary` contains folders with various images used in the app and in this README file.
+- `main.py` that you can run to start the project.
+- `requirements.txt` contains external python modules used in the project and their versions.
 
 
 ### Application preview
