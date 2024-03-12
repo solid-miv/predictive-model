@@ -40,4 +40,4 @@ The project main directory contains the following folders:
 #### Successful prediction
 ![Screenshot of a successful prediction](/supplementary/screens/successful_prediction.png)
 #### Prediction with a warning
-![Prediction with a warning](/screens/prediction_with_warning.png)
+![Prediction with a warning](/supplementary/screens/prediction_with_warning.png)
