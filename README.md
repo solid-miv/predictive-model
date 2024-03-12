@@ -5,16 +5,8 @@ The original data was taken from [here](https://www.kaggle.com/datasets/mirichoi
 
 
 ### How to run a project
-Start `main.py` in order to run a project.
+Start ***main.py*** in order to run a project.
 You don't need to train any models before running the program, because they have already be trained and could be found inside *saved_model_dnn/* and *saved_model_forest/*. If you do want to train the models by yourself or change some hyperparameters, then feel free to run *model_train_dnn.py* or *model_train_forest.py*.
-
-
-### Models available
-This recommendation system can predict the costs with 3 models:
-- Deep Neural Network (you can find its architecture in `saved_models/saved_model_dnn/model_train_dnn.py`)
-- Wide&Deep Neural Network (you can find its architecture in `saved_models/saved_model_wdnn/model_train_wdnn.py`)
-- Random Forest Regression (you can find its setup in `saved_models/saved_model_forest/model_train_forest.py`)
-Deep NN and Wide&Deep NN have approximately the same scores. And they are slightly better than the Random Forest Regression model.
 
 
 ### Data description
@@ -24,7 +16,7 @@ The recommendations system takes into account:
 - BMI (Body Mass Index)
 - Number of children
 - Whether the person smokes
-- Region pf the person
+- Region of the person
 
 
 ### Project structure
@@ -40,4 +32,4 @@ The project main directory contains the following folders:
 #### Successful prediction
 ![Screenshot of a successful prediction](/supplementary/screens/successful_prediction.png)
 #### Prediction with a warning
-![Prediction with a warning](/supplementary/screens/prediction_with_warning.png)
+![Prediction with a warning](/screens/prediction_with_warning.png)
