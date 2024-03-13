@@ -4,7 +4,7 @@ import pandas as pd
 
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import layers
+from keras import layers
 
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
@@ -89,7 +89,7 @@ def build_evaluate_model(X_train, X_test, y_train, y_test):
     r2 = r2_score(y_test, Y_pred)
     print(f"r2: {r2}")
 
-    # save the evaluation results to dnn_evaluation.txt
+    # save the evaluation results to wdnn_evaluation.txt
     with open(os.path.join(os.getcwd(), "saved_models/saved_model_wdnn/wdnn_evaluation.txt"), "w") as file:
         file.write(f"mse: {mse}\n")
         file.write(f"mae: {mae}\n")

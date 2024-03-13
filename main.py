@@ -12,8 +12,6 @@ import numpy as np
 from joblib import load
 
 import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
 
 from PyQt6 import QtGui
 from PyQt6.QtWidgets import (
