@@ -3,8 +3,7 @@ import os
 import pandas as pd
 
 import tensorflow as tf
-from tensorflow import keras
-from keras import layers
+from tensorflow.keras import layers
 
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
@@ -48,7 +47,7 @@ def load_preprocess_data():
 def build_evaluate_model(X_train, X_test, y_train, y_test):
     # Wide & Deep Neural Network with TensorFlow
 
-    normalization_layer = tf.keras.layers.Normalization(axis=-1)
+    normalization_layer = layers.Normalization(axis=-1)
     normalization_layer.adapt(X_train)
     hidden_layer1 = layers.Dense(128, activation="relu")
     hidden_layer2 = layers.Dense(64, activation="relu")
@@ -62,7 +61,7 @@ def build_evaluate_model(X_train, X_test, y_train, y_test):
     concat = concat_layer([normalized, hidden2])
     output = output_layer(concat)
 
-    model = keras.Model(inputs=[input_], outputs=[output])
+    model = tf.keras.Model(inputs=[input_], outputs=[output])
 
     model.compile(loss='mean_absolute_error', 
                   optimizer=tf.keras.optimizers.Adam(0.001))            

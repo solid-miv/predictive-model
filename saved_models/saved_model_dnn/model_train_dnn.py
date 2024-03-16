@@ -3,8 +3,7 @@ import os
 import pandas as pd
 
 import tensorflow as tf
-from tensorflow import keras
-from keras import layers
+from tensorflow.keras import layers
 
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
@@ -48,7 +47,7 @@ def load_preprocess_data():
 def build_evaluate_model(X_train, X_test, y_train, y_test):
     # DNN with TensorFlow
     # build a model
-    normalizer = tf.keras.layers.Normalization(axis=-1)
+    normalizer = layers.Normalization(axis=-1)
     normalizer.adapt(X_train)
 
     model = tf.keras.Sequential([
