@@ -39,13 +39,13 @@ REQUEST_REGION_GENDER = "Please select a gender and a region."
 
 # global variables
 
-app_title = 'USA Medical Cost Prediction'
-charges_data = []
-predicted_charges = 36000
+APP_TITLE = 'USA Medical Cost Prediction'
+CHARGES_DATA = []
+PREDICTED_CHARGES = 36000
 
 # taken from the csv file, may be adjusted after reading CSV
-min_bmi = 15
-max_bmi = 50
+MIN_BMI = 15
+MAX_BMI = 50
 
 
 # global functions
@@ -76,14 +76,14 @@ class SecondWindow(QMainWindow):
         super().__init__()
 
         # use global data
-        global charges_data
+        global CHARGES_DATA
         
         wid = QWidget()
         
         layout2 = QVBoxLayout()
        
         self.sc2 = MplCanvas(self, width=5, height=4, dpi=100)
-        charges_data.hist(ax=self.sc2.axes)
+        CHARGES_DATA.hist(ax=self.sc2.axes)
         save_fig(self.sc2.figure,"histogram", tight_layout=True, fig_extension="png", resolution=300) 
 
         layout2.addWidget(self.sc2)
@@ -99,12 +99,12 @@ class Window(QMainWindow):
       self.resize(750, 750)
 
     def load_model_data(self):
-        global charges_data
+        global CHARGES_DATA
         
         self.charges_data = pd.read_csv(os.path.join(os.getcwd(), "data/medical_cost.csv"))
         
         # assign to global variable
-        charges_data = self.charges_data
+        CHARGES_DATA = self.charges_data
 
         # load the Deep Neural Network model
         self.dnn_model = tf.keras.models.load_model(
@@ -124,9 +124,9 @@ class Window(QMainWindow):
             self.w2.show()
     
     def init_ui(self):
-      global min_bmi
-      global max_bmi
-      global predicted_charges
+      global MIN_BMI
+      global MAX_BMI
+      global PREDICTED_CHARGES
       
       print("init_ui")
       try:
@@ -150,8 +150,8 @@ class Window(QMainWindow):
 
         # slider for bmi
         self.slider_bmi = QSlider(Qt.Orientation.Horizontal)
-        self.slider_bmi.setMinimum(min_bmi) 
-        self.slider_bmi.setMaximum(max_bmi)
+        self.slider_bmi.setMinimum(MIN_BMI) 
+        self.slider_bmi.setMaximum(MAX_BMI)
         self.slider_bmi.valueChanged.connect(self.update_selected_BMI)
         layout.addWidget(self.slider_bmi, 0, 1)
         
@@ -180,9 +180,9 @@ class Window(QMainWindow):
         self.max_bmi = QLabel(self)
         self.selected_bmi = QLabel(self)
         self.selected_bmi.setStyleSheet("QLabel {color: blue}")
-        self.min_bmi.setText("Body mass index: " + str(min_bmi) + " (select with Slider)  ")
-        self.max_bmi.setText("           to: " + str(max_bmi))
-        self.selected_bmi.setText(str(min_bmi))
+        self.min_bmi.setText("Body mass index: " + str(MIN_BMI) + " (select with Slider)  ")
+        self.max_bmi.setText("           to: " + str(MAX_BMI))
+        self.selected_bmi.setText(str(MIN_BMI))
         font_bmi = self.min_bmi.font()
         font_bmi.setBold(True)
         font_bmi.setPointSize(12)
@@ -302,7 +302,7 @@ class Window(QMainWindow):
         layout3.addWidget(btn_forest)
 
         self.label_prediction = QLabel(self)
-        self.label_prediction.setText("Predicted charges: " + str(predicted_charges))
+        self.label_prediction.setText("Predicted charges: " + str(PREDICTED_CHARGES))
         font_lab_prediction = self.label_prediction.font()
         font_lab_prediction.setBold(True)
         font_lab_prediction.setFamily("Tahoma")
@@ -315,7 +315,7 @@ class Window(QMainWindow):
         
         # canvas for plot
         self.sc = MplCanvas(self, width=5, height=4, dpi=100)
-        self.plot_charges(35.3, predicted_charges)
+        self.plot_charges(35.3, PREDICTED_CHARGES)
         
         self.sc.setMinimumWidth(100)
         layout.addWidget(self.sc, 2, 1)
@@ -351,7 +351,7 @@ class Window(QMainWindow):
         # set the central widget of the window 
         # widget will expand to take up all the space in the window by default
         self.setCentralWidget(widget)
-        self.setWindowTitle(app_title)
+        self.setWindowTitle(APP_TITLE)
         self.setGeometry(30, 30, 700, 550)
         self.show()
         return True
@@ -361,11 +361,11 @@ class Window(QMainWindow):
 
     # print bmi (y-axis) and charges (x-axis)
     def plot_charges(self, bmi=None, charges=None):
-        global charges_data
+        global CHARGES_DATA
         
         self.sc.axes.cla()
 
-        self.df = charges_data.loc[:, ('charges', 'bmi')]
+        self.df = CHARGES_DATA.loc[:, ('charges', 'bmi')]
         
         self.df.sort_values(by=['bmi'], inplace=True)
         self.df.reset_index(drop = True, inplace = True)
@@ -429,7 +429,7 @@ class Window(QMainWindow):
     # show prediction with WDNN  
     def show_prediction_wdnn(self):
         if self.validate_checkboxes():
-            global predicted_charges
+            global PREDICTED_CHARGES
         
             a = self.qd.value()  # age
             b = self.slider_bmi.value()  # bmi
@@ -467,20 +467,20 @@ class Window(QMainWindow):
                 nw = 1
             
             X_test = [[ne, nw, se, sw, a, m, b, c, h]]
-            predicted_charges = round(self.wdnn_model.predict(X_test)[0][0], 2)  # for wdnn
+            PREDICTED_CHARGES = round(self.wdnn_model.predict(X_test)[0][0], 2)  # for wdnn
 
-            print(type(predicted_charges))
-            print("Predicted charges: %.2f" % predicted_charges)
+            print(type(PREDICTED_CHARGES))
+            print("Predicted charges: %.2f" % PREDICTED_CHARGES)
 
-            self.label_prediction.setText("Predicted charges: " + str(predicted_charges))
-            self.plot_charges(bmi=b, charges=predicted_charges)
+            self.label_prediction.setText("Predicted charges: " + str(PREDICTED_CHARGES))
+            self.plot_charges(bmi=b, charges=PREDICTED_CHARGES)
         else:
             QMessageBox.warning(self, "Validation Error", REQUEST_REGION_GENDER)
 
     # show prediction with DNN  
     def show_prediction_dnn(self):
         if self.validate_checkboxes():
-            global predicted_charges
+            global PREDICTED_CHARGES
         
             a = self.qd.value()  # age
             b = self.slider_bmi.value()  # bmi
@@ -518,20 +518,20 @@ class Window(QMainWindow):
                 nw = 1
             
             X_test = [[ne, nw, se, sw, a, m, b, c, h]]
-            predicted_charges = round(self.dnn_model.predict(X_test)[0][0], 2)  # for dnn
+            PREDICTED_CHARGES = round(self.dnn_model.predict(X_test)[0][0], 2)  # for dnn
 
-            print(type(predicted_charges))
-            print("Predicted charges: %.2f" % predicted_charges)
+            print(type(PREDICTED_CHARGES))
+            print("Predicted charges: %.2f" % PREDICTED_CHARGES)
 
-            self.label_prediction.setText("Predicted charges: " + str(predicted_charges))
-            self.plot_charges(bmi=b, charges=predicted_charges)
+            self.label_prediction.setText("Predicted charges: " + str(PREDICTED_CHARGES))
+            self.plot_charges(bmi=b, charges=PREDICTED_CHARGES)
         else:
             QMessageBox.warning(self, "Validation Error", REQUEST_REGION_GENDER)
 
     # show prediction with Random Forest
     def show_prediction_forest(self):
         if self.validate_checkboxes():
-            global predicted_charges
+            global PREDICTED_CHARGES
         
             a = self.qd.value()  # age
             b = self.slider_bmi.value()  # bmi
@@ -569,13 +569,13 @@ class Window(QMainWindow):
                 nw = 1
             
             X_test = [[ne, nw, se, sw, a, m, b, c, h]]
-            predicted_charges = round(self.forest_model.predict(X_test)[0], 2)  # for random forest
+            PREDICTED_CHARGES = round(self.forest_model.predict(X_test)[0], 2)  # for random forest
 
-            print(type(predicted_charges))
-            print("Predicted charges: %.2f" % predicted_charges)
+            print(type(PREDICTED_CHARGES))
+            print("Predicted charges: %.2f" % PREDICTED_CHARGES)
 
-            self.label_prediction.setText("Predicted charges: " + str(predicted_charges))
-            self.plot_charges(bmi=b, charges=predicted_charges)
+            self.label_prediction.setText("Predicted charges: " + str(PREDICTED_CHARGES))
+            self.plot_charges(bmi=b, charges=PREDICTED_CHARGES)
         else:
             QMessageBox.warning(self, "Validation Error", REQUEST_REGION_GENDER)
 
