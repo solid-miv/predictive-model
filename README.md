@@ -5,8 +5,12 @@ The original data was taken from [here](https://www.kaggle.com/datasets/mirichoi
 
 
 ### How to run a project
-Start ***main.py*** in order to run a project.
-You don't need to train any models before running the program, because they have already been trained and could be found inside `saved_model_dnn/` and `saved_model_forest/`. If you do want to train the models by yourself or change some hyperparameters, then feel free to run `model_train_dnn.py` or `model_train_wdnn.py` or `model_train_forest.py`.
+1. Navigate to the project folder.
+2. Set up a virtual environment. See `requirements.txt` for the versions.
+3. Activate a virtual environment.
+4. Run `python main.py` command.
+
+**N.B.** You don't need to train any models before running the program, because they have already been trained and could be found inside `saved_model_dnn/` and `saved_model_forest/`. If you do want to train the models by yourself or change some hyperparameters, then feel free to modify and run `model_train_dnn.py` or `model_train_wdnn.py` or `model_train_forest.py`.
 
 
 ### Models available
