@@ -106,12 +106,12 @@ class Window(QMainWindow):
 
         # load the Deep Neural Network model
         self.dnn_model = tf.keras.models.load_model(
-            filepath=os.path.join(os.getcwd(), "saved_models/saved_model_dnn/dnn_model.tf")
+            filepath=os.path.join(os.getcwd(), "saved_models/saved_model_dnn/dnn_model.keras")
         )
 
         # load the Wide & Deep Neural Network model
         self.wdnn_model = tf.keras.models.load_model(
-            filepath=os.path.join(os.getcwd(), "saved_models/saved_model_wdnn/wdnn_model.tf")
+            filepath=os.path.join(os.getcwd(), "saved_models/saved_model_wdnn/wdnn_model.keras")
         )
 
         # load the Random Forest model

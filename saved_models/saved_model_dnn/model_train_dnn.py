@@ -47,7 +47,7 @@ def load_preprocess_data():
 def build_evaluate_model(X_train, X_test, y_train, y_test):
     # DNN with TensorFlow
     # build a model
-    normalizer = layers.Normalization(axis=-1)
+    normalizer = layers.Normalization(axis=-1, input_shape=[X_train.shape[1]])
     normalizer.adapt(X_train)
 
     model = tf.keras.Sequential([
@@ -97,4 +97,4 @@ def save_model(model, format="keras"):
 if __name__ == "__main__":
     X_train, X_test, y_train, y_test = load_preprocess_data()
     model = build_evaluate_model(X_train, X_test, y_train, y_test)
-    save_model(model, format="tf")
+    save_model(model)

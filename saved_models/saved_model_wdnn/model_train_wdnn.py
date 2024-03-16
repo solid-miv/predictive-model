@@ -47,7 +47,7 @@ def load_preprocess_data():
 def build_evaluate_model(X_train, X_test, y_train, y_test):
     # Wide & Deep Neural Network with TensorFlow
 
-    normalization_layer = layers.Normalization(axis=-1)
+    normalization_layer = layers.Normalization(axis=-1, input_shape=[X_train.shape[1]])
     normalization_layer.adapt(X_train)
     hidden_layer1 = layers.Dense(128, activation="relu")
     hidden_layer2 = layers.Dense(64, activation="relu")
@@ -104,4 +104,4 @@ def save_model(model, format="keras"):
 if __name__ == "__main__":
     X_train, X_test, y_train, y_test = load_preprocess_data()
     model = build_evaluate_model(X_train, X_test, y_train, y_test)
-    save_model(model, format="tf")
+    save_model(model)
