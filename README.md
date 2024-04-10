@@ -1,6 +1,6 @@
-## Recommendation System
+## Insurance costs predictive model
 
-This is a recommendation system that predicts the amount of money needed to cover the insurance cost. It is aimed at the American citizens.
+This is a model that predicts the amount of money needed to cover the insurance cost. It is aimed at the American citizens.
 The original data was taken from [here](https://www.kaggle.com/datasets/mirichoi0218/insurance/data).
 
 
@@ -10,7 +10,7 @@ The original data was taken from [here](https://www.kaggle.com/datasets/mirichoi
 3. Activate a virtual environment.
 4. Run `python main.py` command.
 
-**N.B.** You don't need to train any models before running the program, because they have already been trained and could be found inside `saved_model_dnn/`, `saved_model_wdnn/`, and `saved_model_forest/`. If you do want to train the models by yourself or change some hyperparameters, then feel free to modify and run `model_train_dnn.py`, `model_train_wdnn.py` or `model_train_forest.py`, respectively.
+**N.B.** You don't need to train any models before running the program, because they have already been trained and could be found inside `saved_model_dnn/`, `saved_model_wdnn/`, and `saved_model_forest/`. If you do want to train the models on your own or change some hyperparameters, then feel free to modify and run `model_train_dnn.py`, `model_train_wdnn.py` or `model_train_forest.py`, respectively.
 
 
 ### Models available
