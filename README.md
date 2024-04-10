@@ -14,7 +14,7 @@ The original data was taken from [here](https://www.kaggle.com/datasets/mirichoi
 
 
 ### Models available
-This recommendation system can predict the costs with 3 models:
+This system can predict the costs with 3 models:
 - Deep Neural Network (you can find its architecture in `saved_models/saved_model_dnn/model_train_dnn.py`)
 - Wide&Deep Neural Network (you can find its architecture in `saved_models/saved_model_wdnn/model_train_wdnn.py`)
 - Random Forest Regression (you can find its setup in `saved_models/saved_model_forest/model_train_forest.py`)
@@ -22,7 +22,7 @@ Deep NN and Wide&Deep NN have approximately the same scores. And they are slight
 
 
 ### Data description
-The recommendations system takes into account:
+The following features are taken into account:
 - Age
 - Sex
 - BMI (Body Mass Index)
